@@ -3,7 +3,7 @@ on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: ubuntu-22.04 # Using 22.04 for better stability with older NDKs
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout code
@@ -14,23 +14,41 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install Dependencies
+      - name: Install System Dependencies (Part 1)
         run: |
           sudo apt update
-          sudo apt install -y git zip unzip autoconf libtool pkg-config zlib1g-dev \
-          libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev \
-          build-essential patch python3-dev
-          pip install --user --upgrade buildozer cython virtualenv
+          sudo apt install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
 
-      - name: Build with Buildozer
+      - name: Install GStreamer and Core Tools
         run: |
-          # Adding local bin to path to find buildozer
+          sudo apt-get install -y libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good
+          sudo apt update
+          sudo apt install -y python3-pip openjdk-17-jdk zip unzip git autoconf automake libtool pkg-config m4 gettext autoconf-archive build-essential cmake libffi-dev libssl-dev zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 libsqlite3-dev liblzma-dev
+
+      - name: Install Database and Compression Libs
+        run: |
+          sudo apt-get install -y build-essential libsqlite3-dev sqlite3 bzip2 libbz2-dev zlib1g-dev libssl-dev openssl libgdbm-dev libgdbm-compat-dev liblzma-dev libreadline-dev libncursesw5-dev libffi-dev uuid-dev libffi7
+          sudo apt-get install -y libffi-dev
+
+      - name: Install Media and SDL2 Development Libs
+        run: |
+          sudo apt-get install -y python3-pip build-essential git python3 python3-dev ffmpeg libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev zlib1g-dev
+
+      - name: Install Buildozer and Cython
+        run: |
+          pip install --upgrade pip
+          pip install buildozer
+          pip install cython==0.29.33 virtualenv
+
+      - name: Build APK with Buildozer
+        run: |
+          # Adding local bin to path
           export PATH=$PATH:~/.local/bin
-          # 'yes |' automatically accepts the Android SDK licenses
+          # Automatically accept SDK licenses and build
           yes | buildozer -v android debug
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: python-apk
+          name: python-android-package
           path: bin/*.apk
