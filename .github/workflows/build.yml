@@ -46,21 +46,4 @@ jobs:
           uses: actions/upload-artifact@v4
           with:
             name: python-apk
-            path: bin/*.apk      - name: Install Buildozer and Cython
-        run: |
-          pip install --upgrade pip
-          pip install buildozer
-          pip install cython==0.29.33 virtualenv
-
-      - name: Build APK with Buildozer
-        run: |
-          # Adding local bin to path
-          export PATH=$PATH:~/.local/bin
-          # Automatically accept SDK licenses and build
-          yes | buildozer -v android debug
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-android-package
-          path: bin/*.apk
+            path: bin/*.apk
